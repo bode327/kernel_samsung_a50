@@ -3318,7 +3318,7 @@
         #cooling-cells = <2>; /* min followed by max */
 		governor = "interactive";
 		interactive_info = <385000 94 0>;
-		gpu_dvfs_table_size = <12 7>; /*<row col>*/
+		gpu_dvfs_table_size = <11 7>; /*<row col>*/
 		/*  8 columns      freq  down   up  stay  mif    little  middle   big  */
 		gpu_dvfs_table = <  1053000    95  100   1  2093000 1534000       0
 		                     949000    90   98   1  2093000 1534000       0
@@ -3335,8 +3335,8 @@
 		gpu_pmqos_cpu_cluster_num = <2>;
 		gpu_pmu_status_reg_offset = <0x4064>;
 		gpu_pmu_status_local_pwr_mask = <0xF>; /*0x1 << 0*/
-		gpu_max_clock = <1053000>; /*1053*/
-		gpu_max_clock_limit = <1053000>; /*1053*/
+		gpu_max_clock = <1053000>;
+		gpu_max_clock_limit = <1053000>;
 		gpu_min_clock = <260000>;
 		gpu_dvfs_start_clock = <260000>;
 		gpu_dvfs_bl_config_clock = <260000>;
