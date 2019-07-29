@@ -721,6 +721,8 @@ out_sem:
 		ret = check_block_validity(inode, map);
 		if (ret != 0)
 			return ret;
+			
+		unsigned long start_byte, length;
 
 		/*
 		 * Inodes with freshly allocated blocks where contents will be

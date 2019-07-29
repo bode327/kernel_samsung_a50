@@ -821,7 +821,7 @@ const struct cred *override_creds(const struct cred *new)
 
 	validate_creds(old);
 	validate_creds(new);
-<<<<<<< HEAD
+
 #ifdef CONFIG_RKP_KDP
 	if(rkp_cred_enable) {
 		volatile unsigned int rkp_use_count = rkp_get_usecount(new);
@@ -838,8 +838,6 @@ const struct cred *override_creds(const struct cred *new)
 		rcu_assign_pointer(current->cred, new);
 	}
 #else
-	get_cred(new);
-=======
 
 	/*
 	 * NOTE! This uses 'get_new_cred()' rather than 'get_cred()'.
@@ -853,7 +851,7 @@ const struct cred *override_creds(const struct cred *new)
 	 * on the validation in 'get_cred()'.
 	 */
 	get_new_cred((struct cred *)new);
->>>>>>> 8b941011f2df... access: avoid the RCU grace period for the temporary subjective credentials
+
 	alter_cred_subscribers(new, 1);
 	rcu_assign_pointer(current->cred, new);
 #endif  /* CONFIG_RKP_KDP */
