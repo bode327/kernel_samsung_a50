@@ -1,0 +1,15 @@
+# Build and Release Folders
+./out
+./output
+./gcc
+./GCC_9.3
+./GCC_11.X
+./Optimized
+./A50.sh
+./make.sh
+./clang
+./beta.config
+
+# Project files, i.e. `.project`, `.actionScriptProperties` and `.flexProperties`
+# should NOT be excluded as they contain compiler settings and other important
+# information for Eclipse / Flash Builder.
