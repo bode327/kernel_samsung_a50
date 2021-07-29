@@ -909,13 +909,13 @@ static __init int init_table(struct exynos_cpufreq_domain *domain)
 
 	for (index = 0; index < domain->table_size; index++) {
 		domain->freq_table[index].driver_data = index;
-		
+#ifdef CONFIG_ARM_MODCLOCK		
 		/* Undervolt */
 		volt_table[index] -= CONFIG_UNDERVOLT;
 		
 		/* Overvolt */
 		volt_table[index] += CONFIG_OVERVOLT;
-
+#endif
 		if (table[index] > domain->max_freq)
 			domain->freq_table[index].frequency = CPUFREQ_ENTRY_INVALID;
 		else if (table[index] < domain->min_freq)
@@ -1161,6 +1161,7 @@ static int register_dm_callback(struct exynos_cpufreq_domain *domain)
 }
 
 //INICIO OVERCLOCK
+#ifdef CONFIG_ARM_MODCLOCK
 
 static unsigned long arg_cpu_max_c1 = CONFIG_MAX_FREQ_LITTLE; //FUNCIONAL 1846 //STOCK 1742
 
@@ -1233,7 +1234,7 @@ static __init int cpufreq_read_cpu_min_c2(char *cpu_min_c2)
 	return ret;
 }
 __setup("cpu_min_c2=", cpufreq_read_cpu_min_c2);
-
+#endif
 //FINAL UNDERCLOCK
 
 static __init int init_domain(struct exynos_cpufreq_domain *domain,
@@ -1269,19 +1270,24 @@ static __init int init_domain(struct exynos_cpufreq_domain *domain,
 
 
 //INICIO OVERCLOCK AND UNDERCLOCK
-	
+#ifdef CONFIG_ARM_MODCLOCK
 	if (domain->id == 0) {
-		domain->min_freq = arg_cpu_min_c1;
+		domain->max_usable_freq = arg_cpu_max_c1;
 		domain->max_freq = arg_cpu_max_c1;
+		domain->min_usable_freq = arg_cpu_min_c1;
+		domain->min_freq = arg_cpu_min_c1;
 	} else if (domain->id == 1) {
-		domain->min_freq = arg_cpu_min_c2;
+		domain->max_usable_freq = arg_cpu_max_c2;
 		domain->max_freq = arg_cpu_max_c2;
+		domain->min_usable_freq = arg_cpu_min_c2;
+		domain->min_freq = arg_cpu_min_c2;
 	}
+
 
 	/* Default QoS for user */
 	if (!of_property_read_u32(dn, "user-default-qos", &val))
 		domain->user_default_qos = val;
-		
+#endif
 //FINAL OVERCLOCK
 
 		

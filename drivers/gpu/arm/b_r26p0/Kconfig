@@ -283,9 +283,8 @@ config MALI_JOB_DUMP
 	  you are doing.
 
 config MALI_PRFCNT_SET_SECONDARY
-	bool "Use secondary set of performance counters"
+	bool "Secondary"
 	depends on MALI_MIDGARD && MALI_EXPERT
-	default n
 	help
 	  Select this option to use secondary set of performance counters. Kernel
 	  features that depend on an access to the primary set of counters may

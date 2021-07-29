@@ -4,6 +4,9 @@
  * Copyright (C) 2016, Intel Corporation
  * Author: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
  *
+ * Copyright (C) 2021, Bode327
+ * Reworked for kernel 4.14.x
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 as
  * published by the Free Software Foundation.
@@ -743,7 +746,7 @@ disable_fast_switch:
     return ret;
 }
 
-static int pwrgov_exit(struct cpufreq_policy *policy)
+static void pwrgov_exit(struct cpufreq_policy *policy)
 {
     struct pwrgov_policy *sg_policy = policy->governor_data;
     struct pwrgov_tunables *tunables = sg_policy->tunables;
@@ -763,7 +766,6 @@ static int pwrgov_exit(struct cpufreq_policy *policy)
     pwrgov_policy_free(sg_policy);
 
     cpufreq_disable_fast_switch(policy);
-    return 0;
 }
 
 static int pwrgov_start(struct cpufreq_policy *policy)
@@ -797,7 +799,7 @@ static int pwrgov_start(struct cpufreq_policy *policy)
     return 0;
 }
 
-static int pwrgov_stop(struct cpufreq_policy *policy)
+static void pwrgov_stop(struct cpufreq_policy *policy)
 {
     struct pwrgov_policy *sg_policy = policy->governor_data;
     unsigned int cpu;
@@ -811,10 +813,9 @@ static int pwrgov_stop(struct cpufreq_policy *policy)
 	irq_work_sync(&sg_policy->irq_work);
 	kthread_cancel_work_sync(&sg_policy->work);
     }
-    return 0;
 }
 
-static int pwrgov_limits(struct cpufreq_policy *policy)
+static void pwrgov_limits(struct cpufreq_policy *policy)
 {
     struct pwrgov_policy *sg_policy = policy->governor_data;
 
@@ -825,27 +826,6 @@ static int pwrgov_limits(struct cpufreq_policy *policy)
     }
 
     sg_policy->need_freq_update = true;
-
-    return 0;
-}
-
-static int cpufreq_pwrutilx_cb(struct cpufreq_policy *policy,
-		unsigned int event)
-{
-    switch(event) {
-    case CPUFREQ_GOV_POLICY_INIT:
-	return pwrgov_init(policy);
-    case CPUFREQ_GOV_POLICY_EXIT:
-	return pwrgov_exit(policy);
-    case CPUFREQ_GOV_START:
-	return pwrgov_start(policy);
-    case CPUFREQ_GOV_STOP:
-	return pwrgov_stop(policy);
-    case CPUFREQ_GOV_LIMITS:
-	return pwrgov_limits(policy);
-    default:
-	BUG();
-    }
 }
 
 #ifndef CONFIG_CPU_FREQ_DEFAULT_GOV_PWRUTILX
@@ -853,8 +833,13 @@ static
 #endif
 struct cpufreq_governor cpufreq_gov_pwrutilx = {
     .name = "pwrutilx",
-    .governor = cpufreq_pwrutilx_cb,
     .owner = THIS_MODULE,
+    .init = pwrgov_init,
+    .exit = pwrgov_exit,
+    .start = pwrgov_start,
+    .stop = pwrgov_stop,
+    .limits = pwrgov_limits,
+    
 };
 
 static int __init pwrgov_register(void)

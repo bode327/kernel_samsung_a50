@@ -4,6 +4,9 @@
  * Copyright (C) 2016, Intel Corporation
  * Author: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
  *
+ * Copyright (C) 2021, Bode327
+ * Reworked for kernel 4.14.x
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 as
  * published by the Free Software Foundation.
@@ -729,7 +732,7 @@ static int sugov_init(struct cpufreq_policy *policy)
 	tunables->down_rate_limit_us =
 				5000;
 
-	tunables->iowait_boost_enable = policy->iowait_boost_enable;
+	tunables->iowait_boost_enable = 0;
 
 	policy->governor_data = sg_policy;
 	sg_policy->tunables = tunables;
@@ -763,7 +766,7 @@ disable_fast_switch:
 	return ret;
 }
 
-static int sugov_exit(struct cpufreq_policy *policy)
+static void sugov_exit(struct cpufreq_policy *policy)
 {
 	struct sugov_policy *sg_policy = policy->governor_data;
 	struct sugov_tunables *tunables = sg_policy->tunables;
@@ -782,7 +785,6 @@ static int sugov_exit(struct cpufreq_policy *policy)
 	sugov_policy_free(sg_policy);
 
 	cpufreq_disable_fast_switch(policy);
-	return 0;
 }
 
 static int sugov_start(struct cpufreq_policy *policy)
@@ -816,7 +818,7 @@ static int sugov_start(struct cpufreq_policy *policy)
 	return 0;
 }
 
-static int sugov_stop(struct cpufreq_policy *policy)
+static void sugov_stop(struct cpufreq_policy *policy)
 {
 	struct sugov_policy *sg_policy = policy->governor_data;
 	unsigned int cpu;
@@ -830,10 +832,9 @@ static int sugov_stop(struct cpufreq_policy *policy)
 		irq_work_sync(&sg_policy->irq_work);
 		kthread_cancel_work_sync(&sg_policy->work);
 	}
-	return 0;
 }
 
-static int sugov_limits(struct cpufreq_policy *policy)
+static void sugov_limits(struct cpufreq_policy *policy)
 {
 	struct sugov_policy *sg_policy = policy->governor_data;
 
@@ -844,27 +845,6 @@ static int sugov_limits(struct cpufreq_policy *policy)
 	}
 
 	sg_policy->need_freq_update = true;
-
-	return 0;
-}
-
-static int cpufreq_schedutil_cb(struct cpufreq_policy *policy,
-				unsigned int event)
-{
-	switch(event) {
-	case CPUFREQ_GOV_POLICY_INIT:
-		return sugov_init(policy);
-	case CPUFREQ_GOV_POLICY_EXIT:
-		return sugov_exit(policy);
-	case CPUFREQ_GOV_START:
-		return sugov_start(policy);
-	case CPUFREQ_GOV_STOP:
-		return sugov_stop(policy);
-	case CPUFREQ_GOV_LIMITS:
-		return sugov_limits(policy);
-	default:
-		BUG();
-	}
 }
 
 #ifndef CONFIG_CPU_FREQ_DEFAULT_GOV_SCHEDUTIL
@@ -872,8 +852,12 @@ static
 #endif
 struct cpufreq_governor cpufreq_gov_electroutil = {
 	.name = "electroutil",
-	.governor = cpufreq_schedutil_cb,
 	.owner = THIS_MODULE,
+	.init = sugov_init,
+	.exit = sugov_exit,
+	.start = sugov_start,
+	.stop = sugov_stop,
+	.limits = sugov_limits,
 };
 
 static int __init sugov_register(void)
