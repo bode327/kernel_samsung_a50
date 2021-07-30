@@ -1,11 +1,11 @@
 # Build and Release Folders
-./out
-./out/*
-./output
-./Optimized
-./A50.sh
-./make.sh
-./git_clean.sh
+/out
+/output
+/Optimized
+/A50.sh
+/make.sh
+/git_clean.sh
+/log
 
 # Project files, i.e. `.project`, `.actionScriptProperties` and `.flexProperties`
 # should NOT be excluded as they contain compiler settings and other important
